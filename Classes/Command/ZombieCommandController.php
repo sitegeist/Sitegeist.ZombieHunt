@@ -168,9 +168,7 @@ class ZombieCommandController extends CommandController
                 if ($this->zombieDetector->isZombie($childNode)) {
                     yield $childNode;
                 } else {
-                    foreach ($this->traverseSubtreeAndYieldZombieNodes($childNode) as $zombieNodes) {
-                        yield $zombieNodes;
-                    }
+                    yield from $this->traverseSubtreeAndYieldZombieNodes($childNode);
                 }
             }
         }
