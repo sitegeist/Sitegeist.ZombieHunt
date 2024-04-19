@@ -5,6 +5,11 @@
     "require": {
         "neos/neos": "^8.3"
     },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10.0",
+        "squizlabs/php_codesniffer": "3.*",
+        "phpunit/phpunit": "^9.5"
+    },
     "autoload": {
         "psr-4": {
             "Sitegeist\\ZombieHunt\\": "Classes/"
@@ -13,6 +18,17 @@
     "extra": {
         "neos": {
             "package-key": "Sitegeist.ZombieHunt"
+        }
+    },
+    "scripts": {
+        "fix": ["phpcbf --standard=PSR12 Classes"],
+        "test:lint": ["phpcs --standard=PSR12 -n Classes"],
+        "test:stan": ["phpstan analyse Classes"],
+        "test": ["composer install", "composer  test:lint", "composer  test:stan"]
+    },
+    "config": {
+        "allow-plugins": {
+            "neos/composer-plugin": true
         }
     }
 }

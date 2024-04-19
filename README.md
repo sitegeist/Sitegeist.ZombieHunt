@@ -25,8 +25,8 @@ Sitegeist:
 
 ## Neos Backend
 
-In the document-tree and content-structure zombie nodes are marked with "🧟" resp. "🔥🧟🔥" for zombie-contents that are due to destruction.
-In addition zombie-contents are marked also in the backend rendering.
+In the document-tree and content-structure zombie-nodes are marked with "🧟" respectively "🔥🧟🔥" for zombie-contents that are due to destruction.
+In addition zombie-contents are marked in the backend rendering.
 
 ## Cli Commands
 

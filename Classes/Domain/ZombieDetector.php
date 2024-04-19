@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Sitegeist\ZombieHunt\Domain;
@@ -7,7 +8,6 @@ use Neos\ContentRepository\Domain\Model\NodeInterface;
 
 class ZombieDetector
 {
-
     protected int $zombificationPeriod;
     protected int $destructionPeriod;
 
@@ -51,7 +51,8 @@ class ZombieDetector
         $lastModification = $node->getNodeData()->getLastModificationDateTime()?->getTimestamp();
         $lastPublication = $node->getNodeData()->getLastPublicationDateTime()?->getTimestamp();
 
-        if ($node->isVisible() === false
+        if (
+            $node->isVisible() === false
             && ($lastModification === null || $lastModification < $latestAllowedTime)
             && ($lastPublication === null || $lastPublication < $latestAllowedTime)
         ) {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Sitegeist\ZombieHunt\Helper;
@@ -30,5 +31,4 @@ class ZombieDetectorHelper implements ProtectedContextAwareInterface
     {
         return in_array($methodName, ['isZombie','isZombieThatHasToBeDestructed']);
     }
-
 }

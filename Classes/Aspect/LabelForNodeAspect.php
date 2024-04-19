@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Sitegeist\ZombieHunt\Aspect;
@@ -14,7 +15,8 @@ class LabelForNodeAspect
 {
     protected ZombieDetector $zombieDetector;
 
-    public function injectZombieDetector(ZombieDetector $zombieDetector) {
+    public function injectZombieDetector(ZombieDetector $zombieDetector)
+    {
         $this->zombieDetector = $zombieDetector;
     }
 
