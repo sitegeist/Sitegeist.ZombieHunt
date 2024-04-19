@@ -32,12 +32,29 @@ In addition zombie-contents are marked in the backend rendering.
 
 The following commands allow to find and destroy zombies.
 
-```shell
-./flow zombie:detect
-```
+### `./flow zombie:detect`
+
+Detect zombies in the given site. Will return an error code if zombie contents that is due to destruction is detected.
 
 ```shell
-./flow zombie:destroy
+USAGE:
+./flow zombie:detect [<options>]
+
+OPTIONS:
+--site-node          node-name of the site to scan, if not defined all sites are used
+--dimension-values   json of the dimension values to use, otherwise default. Example '{"language":["de"]}'
+```
+### `./flow zombie:destroy`
+
+Remove zombie contents that are due to destruction
+
+```shell
+USAGE:
+  ./flow zombie:destroy [<options>]
+
+OPTIONS:
+  --site-node          node-name of the site to scan, if not defined all sites are used
+  --dimension-values   json of the dimension values to use, otherwise default. Example '{"language":["de"]}'
 ```
 
 ## Installation

@@ -36,30 +36,35 @@ class ZombieCommandController extends CommandController
         $this->siteRepository = $siteRepository;
     }
 
-    public function detectCommand(?string $site = null, ?string $dimensions = null): void
+    /**
+     * Detect zombies in the given site. Will return an error code if zombie contents that is due to destruction is detected.
+     *
+     * @param string|null $siteNode node-name of the site to scan, if not defined all sites are used
+     * @param string|null $dimensionValues json of the dimension values to use, otherwise default. Example '{"language":["de"]}'
+     */
+    public function detectCommand(?string $siteNode = null, ?string $dimensionValues = null): void
     {
-        if ($site === null) {
-            /**
-             * @var Site[] $sites
-             */
+        /**
+         * @var Site[] $sites
+         */
+        if ($siteNode === null) {
             $sites = $this->siteRepository->findAll();
         } else {
-            /**
-             * @var Site[] $sites
-             */
-            $sites = [$this->siteRepository->findOneByNodeName($site)];
+            $sites = [$this->siteRepository->findOneByNodeName($siteNode)];
         }
 
         $feedbackLines = '';
+        $zombieCountAcrossAllSites = 0;
+        $zombiesDueToDestructionCountAcrossAllSites = 0;
 
         foreach ($sites as $item) {
             $this->outputLine();
-            $this->outputLine(sprintf('Looking for zombie nodes in site %s (%s)', $item->getName(), $item->getNodeName()));
+            $this->outputLine(sprintf('Looking for zombie nodes in site <info>%s</info> (%s)', $item->getName(), $item->getNodeName()));
             $this->outputLine();
 
             $rootNode = $this->rootNodeDetector->findRootNode(
                 $item->getNodeName(),
-                $dimensions ? json_decode($dimensions, true, JSON_THROW_ON_ERROR) : []
+                $dimensionValues ? json_decode($dimensionValues, true, JSON_THROW_ON_ERROR) : []
             );
             $zombieCount = 0;
             $zombiesDueToDestructionCount = 0;
@@ -67,24 +72,90 @@ class ZombieCommandController extends CommandController
             foreach ($this->traverseSubtreeAndYieldZombieNodes($rootNode) as $zombieNode) {
                 $path = $this->renderNodePath($rootNode, $zombieNode);
                 if ($this->zombieDetector->isZombieThatHasBeDestructed($zombieNode)) {
-                    $this->outputLine(sprintf('- 🔥🧟🔥 %s (%s)', $zombieNode->getLabel(), $path));
+                    $this->outputLine(sprintf('- 🔥🧟🔥 <info>%s (%s)</info> %s', $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
                     $zombiesDueToDestructionCount++;
                 } else {
-                    $this->outputLine(sprintf('- 🧟 %s (%s)', $zombieNode->getLabel(), $path));
+                    $this->outputLine(sprintf('- 🧟 <info>%s (%s)</info> %s', $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(),  $path));
                 }
                 $zombieCount++;
             }
 
-            $feedbackLines .= PHP_EOL . sprintf('%s zombie nodes were detected in site %s (%s) detected. %s are due to destruction', $zombieCount, $item->getName(), $item->getNodeName(), $zombiesDueToDestructionCount);
+            $feedbackLines .= PHP_EOL . sprintf('<info>%s</info> zombie nodes were detected in site <info>%s</info> (%s) detected. <info>%s</info> are due to destruction', $zombieCount, $item->getName(), $item->getNodeName(), $zombiesDueToDestructionCount);
+
+            $zombieCountAcrossAllSites += $zombieCount;
+            $zombiesDueToDestructionCountAcrossAllSites += $zombiesDueToDestructionCount;
         }
 
         $this->outputLine();
-        $this->output($feedbackLines);
+        $this->output($feedbackLines . PHP_EOL);
         $this->outputLine();
+
+        if (count($sites) > 1) {
+            $this->outputLine( sprintf('Across all sites <info>%s</info> zombie nodes were detected of which <info>%s</info> are due to destruction', $zombieCountAcrossAllSites, $zombiesDueToDestructionCountAcrossAllSites));
+        }
+
+        if ($zombiesDueToDestructionCountAcrossAllSites > 0) {
+            $this->quit(1);
+        }
     }
 
-    public function destroyCommand(?string $site = null, ?string $dimensions = null): void
+    /**
+     * Remove zombie contents that are due to destruction
+     *
+     * @param string|null $siteNode node-name of the site to scan, if not defined all sites are used
+     * @param string|null $dimensionValues json of the dimension values to use, otherwise default. Example '{"language":["de"]}'
+     */
+    public function destroyCommand(?string $siteNode = null, ?string $dimensionValues = null): void
     {
+        /**
+         * @var Site[] $sites
+         */
+        if ($siteNode === null) {
+            $sites = $this->siteRepository->findAll();
+        } else {
+            $sites = [$this->siteRepository->findOneByNodeName($siteNode)];
+        }
+
+        $feedbackLines = '';
+        $zombieCountAcrossAllSites = 0;
+        $removedZombieCountAcrossAllSites = 0;
+
+        foreach ($sites as $item) {
+            $this->outputLine();
+            $this->outputLine(sprintf('Destroying for zombie nodes in site <info>%s</info> (%s)', $item->getName(), $item->getNodeName()));
+            $this->outputLine();
+
+            $rootNode = $this->rootNodeDetector->findRootNode(
+                $item->getNodeName(),
+                $dimensionValues ? json_decode($dimensionValues, true, JSON_THROW_ON_ERROR) : []
+            );
+            $zombieCount = 0;
+            $removedZombieCount = 0;
+
+            foreach ($this->traverseSubtreeAndYieldZombieNodes($rootNode) as $zombieNode) {
+                $path = $this->renderNodePath($rootNode, $zombieNode);
+                if ($this->zombieDetector->isZombieThatHasBeDestructed($zombieNode)) {
+                    $this->outputLine(sprintf('- 🔥🧟🔥 <info>%s (%s)</info> %s', $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
+                    $zombieNode->remove();
+                    $removedZombieCount++;
+                }
+                $zombieCount++;
+            }
+
+            $feedbackLines .= PHP_EOL . sprintf('<info>%s</info> zombie nodes of <info>%s</info> were removed in site <info>%s</info> (%s).', $zombieCount, $removedZombieCount, $item->getName(), $item->getNodeName(), );
+
+            $zombieCountAcrossAllSites += $zombieCount;
+            $removedZombieCountAcrossAllSites += $removedZombieCount;
+
+
+            $this->outputLine();
+            $this->output($feedbackLines . PHP_EOL);
+            $this->outputLine();
+
+            if (count($sites) > 1) {
+                $this->outputLine( sprintf('Across all sites <info>%s</info> zombie nodes of <info>%s</info> were removed', $zombieCountAcrossAllSites, $removedZombieCountAcrossAllSites));
+            }
+        }
     }
 
     /**
@@ -118,7 +189,6 @@ class ZombieCommandController extends CommandController
             $pathParts[] = $parent->getLabel();
             $parent = $parent->getParent();
         }
-        $path = implode(' -> ', array_reverse($pathParts));
-        return $path;
+        return implode(' -> ', array_reverse($pathParts));
     }
 }
