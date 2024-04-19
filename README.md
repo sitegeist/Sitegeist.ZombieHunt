@@ -1,6 +1,12 @@
 # Sitegeist.ZombieHunt 
 ## Find and destroy undead contents 🧟
 
+Often times editors will only hide obsolete content and never actually delete it. Over time this leads to hidden content
+that is so old no one remembers who wrote it, why and whether it can finally be removed ... we call this ZOMBIE-Content.
+
+This package visualizes zombie-contents to the editors and allows to automatically destroy contents that have been a zombies 
+for a while. Off course the time-period for hidden content to turn into a zombie is configurable as well as the period for zombie
+destruction.
 
 ### Authors & Sponsors
 
@@ -10,7 +16,7 @@
 
 ## Settings
 
-The zombification and destruction period can be defined via settings. By default hidden contents that have not been touched for
+The zombification- and destruction-period can be defined via settings. By default, hidden contents that have not been touched for
 a year will turn to zombie-content and are due to destruction after another year. 
 
 ```yaml
@@ -26,7 +32,7 @@ Sitegeist:
 ## Neos Backend
 
 In the document-tree and content-structure zombie-nodes are marked with "🧟" respectively "🔥🧟🔥" for zombie-contents that are due to destruction.
-In addition zombie-contents are marked in the backend rendering.
+In addition, zombie-contents are marked in the backend rendering.
 
 ## Cli Commands
 
