@@ -75,7 +75,7 @@ class ZombieCommandController extends CommandController
                     $this->outputLine(sprintf('- 🔥🧟🔥 <info>%s (%s)</info> %s', $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
                     $zombiesDueToDestructionCount++;
                 } else {
-                    $this->outputLine(sprintf('- 🧟 <info>%s (%s)</info> %s', $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(),  $path));
+                    $this->outputLine(sprintf('- 🧟 <info>%s (%s)</info> %s', $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
                 }
                 $zombieCount++;
             }
@@ -91,7 +91,7 @@ class ZombieCommandController extends CommandController
         $this->outputLine();
 
         if (count($sites) > 1) {
-            $this->outputLine( sprintf('Across all sites <info>%s</info> zombie nodes were detected of which <info>%s</info> are due to destruction', $zombieCountAcrossAllSites, $zombiesDueToDestructionCountAcrossAllSites));
+            $this->outputLine(sprintf('Across all sites <info>%s</info> zombie nodes were detected of which <info>%s</info> are due to destruction', $zombieCountAcrossAllSites, $zombiesDueToDestructionCountAcrossAllSites));
         }
 
         if ($zombiesDueToDestructionCountAcrossAllSites > 0) {
@@ -142,7 +142,7 @@ class ZombieCommandController extends CommandController
                 $zombieCount++;
             }
 
-            $feedbackLines .= PHP_EOL . sprintf('<info>%s</info> zombie nodes of <info>%s</info> were removed in site <info>%s</info> (%s).', $zombieCount, $removedZombieCount, $item->getName(), $item->getNodeName(), );
+            $feedbackLines .= PHP_EOL . sprintf('<info>%s</info> zombie nodes of <info>%s</info> were removed in site <info>%s</info> (%s).', $zombieCount, $removedZombieCount, $item->getName(), $item->getNodeName(),);
 
             $zombieCountAcrossAllSites += $zombieCount;
             $removedZombieCountAcrossAllSites += $removedZombieCount;
@@ -153,7 +153,7 @@ class ZombieCommandController extends CommandController
             $this->outputLine();
 
             if (count($sites) > 1) {
-                $this->outputLine( sprintf('Across all sites <info>%s</info> zombie nodes of <info>%s</info> were removed', $zombieCountAcrossAllSites, $removedZombieCountAcrossAllSites));
+                $this->outputLine(sprintf('Across all sites <info>%s</info> zombie nodes of <info>%s</info> were removed', $zombieCountAcrossAllSites, $removedZombieCountAcrossAllSites));
             }
         }
     }
