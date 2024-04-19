@@ -1,0 +1,16 @@
+Sitegeist:
+  ZombieHunt:
+    # hidden content turns to a zombie after this period
+    zombificationPeriod: 31536000
+
+    # zombie contents have to be destructed after this period
+    destructionPeriod: 31536000
+
+Neos:
+  Neos:
+    fusion:
+      autoInclude:
+        Sitegeist.ZombieHunt: true
+  Fusion:
+    defaultContext:
+      Sitegeist.ZombieHunt.ZombieDetector: 'Sitegeist\ZombieHunt\Helper\ZombieDetectorHelper'

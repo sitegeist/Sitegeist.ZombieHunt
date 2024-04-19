@@ -1,0 +1,6 @@
+prototype(Neos.Neos:ContentComponent) {
+    @process.addZombieWarningSign = Sitegeist.ZombieHunt:Prototypes.ZombieWarningSign
+    @process.addZombieWarningSign.@position = 'before contentElementWrapping'
+    @process.addZombieWarningSign.@if.inBackend = ${node.context.inBackend && node.context.currentRenderingMode.edit}
+    @process.addZombieWarningSign.@if.isZombie = ${Sitegeist.ZombieHunt.ZombieDetector.isZombie(node)}
+}

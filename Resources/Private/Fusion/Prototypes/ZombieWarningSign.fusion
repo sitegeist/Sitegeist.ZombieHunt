@@ -1,0 +1,28 @@
+prototype(Sitegeist.ZombieHunt:Prototypes.ZombieWarningSign) < prototype(Neos.Fusion:Component) {
+    content = ${value}
+    node = ${node}
+
+    @private {
+        zombieImageUrl = Neos.Fusion:ResourceUri {
+            path = 'Images/Zombie.webp'
+            package = 'Sitegeist.ZombieHunt'
+        }
+        zombieHasToBeDestructed = ${Sitegeist.ZombieHunt.ZombieDetector.isZombieThatHasToBeDestructed(node)}
+    }
+
+    renderer = afx`
+        <div class="zombie-warning">
+            <div class="zombie-warning-sign" @if={!private.zombieHasToBeDestructed}>
+                <span class="zombie-warning-icon">🧟</span>
+                &nbsp;
+                <span class="zombie-warning-text">This content is dead for a while and starts smelling weird.</span>
+            </div>
+            <div class="zombie-warning-sign" @if={private.zombieHasToBeDestructed}>
+                <span class="zombie-warning-icon" @if={private.zombieHasToBeDestructed}>🔥🧟🔥</span>
+                &nbsp;
+                <span class="zombie-warning-text">!!! This content is dead for a while. Revive it or it may be destructed automatically !!!</span>
+            </div>
+            {props.content}
+        </div>
+    `
+}

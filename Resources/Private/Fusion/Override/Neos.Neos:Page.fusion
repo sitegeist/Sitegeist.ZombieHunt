@@ -1,0 +1,17 @@
+prototype(Neos.Neos:Page) {
+    head {
+        zombieWarningStyles.@if.inBackend = ${node.context.inBackend && node.context.currentRenderingMode.edit}
+        zombieWarningStyles = '
+            <style>
+                .zombie-warning .zombie-warning { display: none; }
+                .zombie-warning .zombie-warning-sign { text-align: center; }
+                .zombie-warning .zombie-warning-icon { font-size: 60px; text-shadow: 2px 2px 5px #000; }
+                .zombie-warning .zombie-warning-text {
+                    display: inline-block; padding: .5em; transform: rotate(3deg); max-width: 300px;
+                    border: 1px solid red; padding: .5em; box-shadow: 2px 2px 5px #000; background-color: white;
+                    font-size: 16px; line-height: 20px; color:red;
+                }
+            </style>
+        '
+    }
+}
