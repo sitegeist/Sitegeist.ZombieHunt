@@ -8,10 +8,10 @@ Sitegeist:
     destructionPeriod: 31536000
 
     # the label for a zombie node
-    zombieLabel: '🧟'
+    zombieLabel: '🧟 '
 
     # label for a zombieNode that is due to destruction
-    zombieToDestroyLabel: '🔥🧟🔥'
+    zombieToDestroyLabel: '🔥🧟🔥 '
 
 Neos:
   Neos:

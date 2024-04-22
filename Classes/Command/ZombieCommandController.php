@@ -64,7 +64,7 @@ class ZombieCommandController extends CommandController
             $sites = [$this->siteRepository->findOneByNodeName($siteNode)];
         }
 
-        $feedbackLines = '';
+        $feedbackLines = [];
         $zombieCountAcrossAllSites = 0;
         $zombiesDueToDestructionCountAcrossAllSites = 0;
 
@@ -91,14 +91,14 @@ class ZombieCommandController extends CommandController
                 $zombieCount++;
             }
 
-            $feedbackLines .= PHP_EOL . sprintf('<info>%s</info> zombie nodes were detected in site <info>%s</info> (%s) detected. <info>%s</info> are due to destruction', $zombieCount, $item->getName(), $item->getNodeName(), $zombiesDueToDestructionCount);
+            $feedbackLines[] = sprintf('<info>%s</info> zombie nodes were detected in site <info>%s</info> (%s) detected. <info>%s</info> are due to destruction', $zombieCount, $item->getName(), $item->getNodeName(), $zombiesDueToDestructionCount);
 
             $zombieCountAcrossAllSites += $zombieCount;
             $zombiesDueToDestructionCountAcrossAllSites += $zombiesDueToDestructionCount;
         }
 
         $this->outputLine();
-        $this->output($feedbackLines . PHP_EOL);
+        $this->output(implode(PHP_EOL, $feedbackLines) . PHP_EOL);
         $this->outputLine();
 
         if (count($sites) > 1) {
@@ -127,13 +127,13 @@ class ZombieCommandController extends CommandController
             $sites = [$this->siteRepository->findOneByNodeName($siteNode)];
         }
 
-        $feedbackLines = '';
+        $feedbackLines = [];
         $zombieCountAcrossAllSites = 0;
         $removedZombieCountAcrossAllSites = 0;
 
         foreach ($sites as $item) {
             $this->outputLine();
-            $this->outputLine(sprintf('Destroying for zombie nodes in site <info>%s</info> (%s)', $item->getName(), $item->getNodeName()));
+            $this->outputLine(sprintf('Destroying zombie nodes in site <info>%s</info> (%s)', $item->getName(), $item->getNodeName()));
             $this->outputLine();
 
             $rootNode = $this->rootNodeDetector->findRootNode(
@@ -153,19 +153,18 @@ class ZombieCommandController extends CommandController
                 $zombieCount++;
             }
 
-            $feedbackLines .= PHP_EOL . sprintf('<info>%s</info> zombie nodes of <info>%s</info> were removed in site <info>%s</info> (%s).', $zombieCount, $removedZombieCount, $item->getName(), $item->getNodeName(),);
+            $feedbackLines[] = sprintf('<info>%s</info> zombie nodes of <info>%s</info> were removed in site <info>%s</info> (%s).', $removedZombieCount, $zombieCount, $item->getName(), $item->getNodeName());
 
             $zombieCountAcrossAllSites += $zombieCount;
             $removedZombieCountAcrossAllSites += $removedZombieCount;
+        }
 
+        $this->outputLine();
+        $this->output(implode(PHP_EOL, $feedbackLines) . PHP_EOL);
+        $this->outputLine();
 
-            $this->outputLine();
-            $this->output($feedbackLines . PHP_EOL);
-            $this->outputLine();
-
-            if (count($sites) > 1) {
-                $this->outputLine(sprintf('Across all sites <info>%s</info> zombie nodes of <info>%s</info> were removed', $removedZombieCountAcrossAllSites, $zombieCountAcrossAllSites));
-            }
+        if (count($sites) > 1) {
+            $this->outputLine(sprintf('Across all sites <info>%s</info> zombie nodes of <info>%s</info> were removed', $removedZombieCountAcrossAllSites, $zombieCountAcrossAllSites));
         }
     }
 

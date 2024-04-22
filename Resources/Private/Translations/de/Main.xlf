@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+    <file original="" product-name="Sitegeist.ZombieHunt" target-language="de" source-language="en" datatype="plaintext">
+        <body>
+            <trans-unit id="zombieNode.info" xml:space="preserve" approved="yes">
+                <target>Dieser Inhalt ist einer Weile tot und riecht bereits komisch.</target>
+                <source>This content is dead for a while and starts smelling weird.</source>
+            </trans-unit>
+            <trans-unit id="zombieNodeDueToDestruction.info" xml:space="preserve" approved="yes">
+                <target>!!! Dieser Inhalt ist seit langer Zeit tot. Bitte wiederbeleben oder er könnte gelöscht werden !!!</target>
+                <source>!!! This content is dead for a while. Revive it or it may be destructed automatically !!!</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
