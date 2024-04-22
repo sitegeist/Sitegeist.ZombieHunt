@@ -20,6 +20,8 @@ class ZombieCommandController extends CommandController
     protected ZombieDetector $zombieDetector;
     protected RootNodeDetector $rootNodeDetector;
     protected SiteRepository $siteRepository;
+    protected string $zombieLabel;
+    protected string $zombieToDestroyLabel;
 
     public function injectZombieDetector(ZombieDetector $zombieDetector)
     {
@@ -34,6 +36,15 @@ class ZombieCommandController extends CommandController
     public function injectSiteRepository(SiteRepository $siteRepository)
     {
         $this->siteRepository = $siteRepository;
+    }
+
+    /**
+     * @param array{zombieLabel: string, zombieToDestroyLabel: string} $settings
+     */
+    public function injectSettings(array $settings): void
+    {
+        $this->zombieLabel = $settings['zombieLabel'];
+        $this->zombieToDestroyLabel = $settings['zombieToDestroyLabel'];
     }
 
     /**
@@ -72,10 +83,10 @@ class ZombieCommandController extends CommandController
             foreach ($this->traverseSubtreeAndYieldZombieNodes($rootNode) as $zombieNode) {
                 $path = $this->renderNodePath($rootNode, $zombieNode);
                 if ($this->zombieDetector->isZombieThatHasBeDestroyed($zombieNode)) {
-                    $this->outputLine(sprintf('- 🔥🧟🔥 <info>%s (%s)</info> %s', $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
+                    $this->outputLine(sprintf('- %s <info>%s (%s)</info> %s', $this->zombieToDestroyLabel, $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
                     $zombiesDueToDestructionCount++;
                 } else {
-                    $this->outputLine(sprintf('- 🧟 <info>%s (%s)</info> %s', $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
+                    $this->outputLine(sprintf('- %s <info>%s (%s)</info> %s', $this->zombieLabel, $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
                 }
                 $zombieCount++;
             }
@@ -135,7 +146,7 @@ class ZombieCommandController extends CommandController
             foreach ($this->traverseSubtreeAndYieldZombieNodes($rootNode) as $zombieNode) {
                 $path = $this->renderNodePath($rootNode, $zombieNode);
                 if ($this->zombieDetector->isZombieThatHasBeDestroyed($zombieNode)) {
-                    $this->outputLine(sprintf('- 🔥🧟🔥 <info>%s (%s)</info> %s', $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
+                    $this->outputLine(sprintf('- %s <info>%s (%s)</info> %s', $this->zombieToDestroyLabel, $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
                     $zombieNode->remove();
                     $removedZombieCount++;
                 }
@@ -153,7 +164,7 @@ class ZombieCommandController extends CommandController
             $this->outputLine();
 
             if (count($sites) > 1) {
-                $this->outputLine(sprintf('Across all sites <info>%s</info> zombie nodes of <info>%s</info> were removed', $zombieCountAcrossAllSites, $removedZombieCountAcrossAllSites));
+                $this->outputLine(sprintf('Across all sites <info>%s</info> zombie nodes of <info>%s</info> were removed', $removedZombieCountAcrossAllSites, $zombieCountAcrossAllSites));
             }
         }
     }

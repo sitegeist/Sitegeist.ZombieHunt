@@ -15,9 +15,21 @@ class LabelForNodeAspect
 {
     protected ZombieDetector $zombieDetector;
 
+    protected string $zombieLabel;
+    protected string $zombieToDestroyLabel;
+
     public function injectZombieDetector(ZombieDetector $zombieDetector)
     {
         $this->zombieDetector = $zombieDetector;
+    }
+
+    /**
+     * @param array{zombieLabel: string, zombieToDestroyLabel: string} $settings
+     */
+    public function injectSettings(array $settings): void
+    {
+        $this->zombieLabel = $settings['zombieLabel'];
+        $this->zombieToDestroyLabel = $settings['zombieToDestroyLabel'];
     }
 
     #[Flow\Around("method(Neos\ContentRepository\Domain\Model\Node->getLabel())")]
@@ -29,9 +41,9 @@ class LabelForNodeAspect
         if ($node instanceof NodeInterface && $node->getContext()->isInBackend() && $node->getContext()->getCurrentRenderingMode()->isEdit()) {
             if ($this->zombieDetector->isZombie($node)) {
                 if ($this->zombieDetector->isZombieThatHasBeDestroyed($node)) {
-                    $label = '🔥🧟🔥 ' . $label;
+                    $label = $this->zombieToDestroyLabel . $label;
                 } else {
-                    $label = '🧟 ' . $label;
+                    $label = $this->zombieLabel . $label;
                 }
             }
         }

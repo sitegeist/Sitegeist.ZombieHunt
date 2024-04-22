@@ -7,6 +7,12 @@ Sitegeist:
     # zombie contents have to be destructed after this period
     destructionPeriod: 31536000
 
+    # the label for a zombie node
+    zombieLabel: '🧟'
+
+    # label for a zombieNode that is due to destruction
+    zombieToDestroyLabel: '🔥🧟🔥'
+
 Neos:
   Neos:
     fusion:
