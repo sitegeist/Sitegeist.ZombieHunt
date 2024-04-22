@@ -1,5 +1,6 @@
 Sitegeist:
   ZombieHunt:
+
     # hidden content turns to a zombie after this period
     zombificationPeriod: 31536000
 
