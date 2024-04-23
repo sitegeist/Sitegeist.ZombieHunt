@@ -28,11 +28,11 @@ Sitegeist:
     # zombie-contents have to be destructed after this period
     destructionPeriod: 31536000
 
-      # the label for zombie nodes
-    zombieLabel: '🧟'
+    # the label for zombie nodes
+    zombieLabel: '🧟 '
 
-      # label for zombieNodes that are due to destruction
-    zombieToDestroyLabel: '🔥🧟🔥'
+    # label for zombieNodes that are due to destruction
+    zombieToDestroyLabel: '🔥🧟🔥 '
 ```
 
 ## Neos Backend
