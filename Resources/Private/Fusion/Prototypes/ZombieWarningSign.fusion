@@ -13,14 +13,14 @@ prototype(Sitegeist.ZombieHunt:Prototypes.ZombieWarningSign) < prototype(Neos.Fu
     renderer = afx`
         <div class="zombie-warning">
             <div class="zombie-warning-sign" @if={!private.zombieHasToBeDestructed}>
-                <span class="zombie-warning-icon">🧟</span>
+                <span class="zombie-warning-icon">{Configuration.setting('Sitegeist.ZombieHunt.zombieLabel')}</span>
                 &nbsp;
-                <span class="zombie-warning-text">This content is dead for a while and starts smelling weird.</span>
+                <span class="zombie-warning-text">{I18n.id('zombieNode.info').package('Sitegeist.ZombieHunt').source('Main').translate()}</span>
             </div>
             <div class="zombie-warning-sign" @if={private.zombieHasToBeDestructed}>
-                <span class="zombie-warning-icon" @if={private.zombieHasToBeDestructed}>🔥🧟🔥</span>
+                <span class="zombie-warning-icon" @if={private.zombieHasToBeDestructed}>{Configuration.setting('Sitegeist.ZombieHunt.zombieToDestroyLabel')}</span>
                 &nbsp;
-                <span class="zombie-warning-text">!!! This content is dead for a while. Revive it or it may be destructed automatically !!!</span>
+                <span class="zombie-warning-text">{I18n.id('zombieNodeDueToDestruction.info').package('Sitegeist.ZombieHunt').source('Main').translate()}</span>
             </div>
             {props.content}
         </div>
