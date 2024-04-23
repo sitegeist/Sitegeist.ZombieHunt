@@ -41,7 +41,7 @@ class ZombieDetector
         return false;
     }
 
-    public function isZombieThatHasBeDestroyed(NodeInterface $node): bool
+    public function isZombieThatHasToBeDestroyed(NodeInterface $node): bool
     {
         if ($node->isVisible()) {
             return false;

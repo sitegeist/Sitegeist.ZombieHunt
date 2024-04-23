@@ -40,7 +40,7 @@ class LabelForNodeAspect
 
         if ($node instanceof NodeInterface && $node->getContext()->isInBackend() && $node->getContext()->getCurrentRenderingMode()->isEdit()) {
             if ($this->zombieDetector->isZombie($node)) {
-                if ($this->zombieDetector->isZombieThatHasBeDestroyed($node)) {
+                if ($this->zombieDetector->isZombieThatHasToBeDestroyed($node)) {
                     $label = $this->zombieToDestroyLabel . $label;
                 } else {
                     $label = $this->zombieLabel . $label;

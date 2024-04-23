@@ -3,12 +3,12 @@
     <file original="" product-name="Sitegeist.ZombieHunt" target-language="de" source-language="en" datatype="plaintext">
         <body>
             <trans-unit id="zombieNode.info" xml:space="preserve" approved="yes">
-                <target>Dieser Inhalt ist einer Weile tot und riecht bereits komisch.</target>
-                <source>This content is dead for a while and starts smelling weird.</source>
+                <target>Dieser Inhalt ist seit einer Weile tot und riecht bereits komisch.</target>
+                <source>This content has been dead for a while now and starts smelling weird.</source>
             </trans-unit>
             <trans-unit id="zombieNodeDueToDestruction.info" xml:space="preserve" approved="yes">
                 <target>!!! Dieser Inhalt ist seit langer Zeit tot. Bitte wiederbeleben oder er könnte gelöscht werden !!!</target>
-                <source>!!! This content is dead for a while. Revive it or it may be destructed automatically !!!</source>
+                <source>!!! This content has been dead for a while now. Revive it or it may be destructed automatically !!!</source>
             </trans-unit>
         </body>
     </file>

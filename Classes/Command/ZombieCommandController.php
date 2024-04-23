@@ -82,7 +82,7 @@ class ZombieCommandController extends CommandController
 
             foreach ($this->traverseSubtreeAndYieldZombieNodes($rootNode) as $zombieNode) {
                 $path = $this->renderNodePath($rootNode, $zombieNode);
-                if ($this->zombieDetector->isZombieThatHasBeDestroyed($zombieNode)) {
+                if ($this->zombieDetector->isZombieThatHasToBeDestroyed($zombieNode)) {
                     $this->outputLine(sprintf('- %s <info>%s (%s)</info> %s', $this->zombieToDestroyLabel, $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
                     $zombiesDueToDestructionCount++;
                 } else {
@@ -115,8 +115,9 @@ class ZombieCommandController extends CommandController
      *
      * @param string|null $siteNode node-name of the site to scan, if not defined all sites are used
      * @param string|null $dimensionValues json of the dimension values to use, otherwise default. Example '{"language":["de"]}'
+     * @param bool|null $dryrun output list of nodes to be deleted without actually deleting them
      */
-    public function destroyCommand(?string $siteNode = null, ?string $dimensionValues = null): void
+    public function destroyCommand(?string $siteNode = null, ?string $dimensionValues = null, ?bool $dryrun = false): void
     {
         /**
          * @var Site[] $sites
@@ -133,7 +134,11 @@ class ZombieCommandController extends CommandController
 
         foreach ($sites as $item) {
             $this->outputLine();
-            $this->outputLine(sprintf('Destroying zombie nodes in site <info>%s</info> (%s)', $item->getName(), $item->getNodeName()));
+            if ($dryrun) {
+                $this->outputLine(sprintf('Zombie nodes in site <info>%s</info> (%s) that would be destroyed', $item->getName(), $item->getNodeName()));
+            } else {
+                $this->outputLine(sprintf('Destroying zombie nodes in site <info>%s</info> (%s)', $item->getName(), $item->getNodeName()));
+            }
             $this->outputLine();
 
             $rootNode = $this->rootNodeDetector->findRootNode(
@@ -145,15 +150,21 @@ class ZombieCommandController extends CommandController
 
             foreach ($this->traverseSubtreeAndYieldZombieNodes($rootNode) as $zombieNode) {
                 $path = $this->renderNodePath($rootNode, $zombieNode);
-                if ($this->zombieDetector->isZombieThatHasBeDestroyed($zombieNode)) {
+                if ($this->zombieDetector->isZombieThatHasToBeDestroyed($zombieNode)) {
                     $this->outputLine(sprintf('- %s <info>%s (%s)</info> %s', $this->zombieToDestroyLabel, $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
-                    $zombieNode->remove();
+                    if (!$dryrun) {
+                        $zombieNode->remove();
+                    }
                     $removedZombieCount++;
                 }
                 $zombieCount++;
             }
 
-            $feedbackLines[] = sprintf('<info>%s</info> zombie nodes of <info>%s</info> were removed in site <info>%s</info> (%s).', $removedZombieCount, $zombieCount, $item->getName(), $item->getNodeName());
+            if ($dryrun) {
+                $feedbackLines[] = sprintf('<info>%s</info> zombie nodes of <info>%s</info> would be removed in site <info>%s</info> (%s).', $removedZombieCount, $zombieCount, $item->getName(), $item->getNodeName());
+            } else {
+                $feedbackLines[] = sprintf('<info>%s</info> zombie nodes of <info>%s</info> were removed in site <info>%s</info> (%s).', $removedZombieCount, $zombieCount, $item->getName(), $item->getNodeName());
+            }
 
             $zombieCountAcrossAllSites += $zombieCount;
             $removedZombieCountAcrossAllSites += $removedZombieCount;
@@ -163,7 +174,9 @@ class ZombieCommandController extends CommandController
         $this->output(implode(PHP_EOL, $feedbackLines) . PHP_EOL);
         $this->outputLine();
 
-        if (count($sites) > 1) {
+        if ($dryrun) {
+            $this->outputLine(sprintf('Across all sites <info>%s</info> zombie nodes of <info>%s</info> would be removed', $removedZombieCountAcrossAllSites, $zombieCountAcrossAllSites));
+        } else {
             $this->outputLine(sprintf('Across all sites <info>%s</info> zombie nodes of <info>%s</info> were removed', $removedZombieCountAcrossAllSites, $zombieCountAcrossAllSites));
         }
     }

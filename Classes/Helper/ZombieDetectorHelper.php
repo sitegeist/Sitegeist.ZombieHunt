@@ -24,7 +24,7 @@ class ZombieDetectorHelper implements ProtectedContextAwareInterface
 
     public function isZombieThatHasToBeDestructed(NodeInterface $node): bool
     {
-        return $this->zombieDetector->isZombieThatHasBeDestroyed($node);
+        return $this->zombieDetector->isZombieThatHasToBeDestroyed($node);
     }
 
     public function allowsCallOfMethod($methodName)
