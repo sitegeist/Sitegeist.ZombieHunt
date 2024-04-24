@@ -21,18 +21,18 @@ a year will turn to zombie content and are due to destruction after another year
 
 ```yaml
 Sitegeist:
-  ZombieHunt:
-    # hidden contents turn to zombie-content after this period
-    zombificationPeriod: 31536000
-
-    # zombie-contents have to be destructed after this period
-    destructionPeriod: 31536000
-
-    # the label for zombie nodes
-    zombieLabel: '🧟 '
-
-    # label for zombieNodes that are due to destruction
-    zombieToDestroyLabel: '🔥🧟🔥 '
+    ZombieHunt:
+        # hidden nodes turn into zombies after this period
+        zombificationPeriod: 31536000
+        
+        # zombie-nodes start are due to destruction after this period
+        destructionPeriod: 31536000
+        
+        # the label for zombie-nodes
+        zombieLabel: '🧟'
+        
+        # label for zombie-nodes that are due to destruction
+        zombieToDestroyLabel: '🔥🧟🔥'
 ```
 
 ## Neos Backend

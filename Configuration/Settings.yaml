@@ -1,16 +1,16 @@
 Sitegeist:
   ZombieHunt:
 
-    # hidden content turns to a zombie after this period
+    # hidden nodes turn into zombies after this period
     zombificationPeriod: 31536000
 
-    # zombie contents have to be destructed after this period
+    # zombie-nodes start are due to destruction after this period
     destructionPeriod: 31536000
 
-    # the label for a zombie node
+    # the label for zombie-nodes
     zombieLabel: '🧟'
 
-    # label for a zombieNode that is due to destruction
+    # label for zombie-nodes that are due to destruction
     zombieToDestroyLabel: '🔥🧟🔥'
 
 Neos:
