@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sitegeist\ZombieHunt\Aspect;
 
-use Neos\ContentRepository\Domain\Projection\Content\NodeInterface;
+use Neos\ContentRepository\Domain\Model\NodeInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Aop\JoinPointInterface;
 use Sitegeist\ZombieHunt\Domain\ZombieDetector;
@@ -41,9 +41,9 @@ class LabelForNodeAspect
         if ($node instanceof NodeInterface && $node->getContext()->isInBackend() && $node->getContext()->getCurrentRenderingMode()->isEdit()) {
             if ($this->zombieDetector->isZombie($node)) {
                 if ($this->zombieDetector->isZombieThatHasToBeDestroyed($node)) {
-                    $label = $this->zombieToDestroyLabel . $label;
+                    $label = $this->zombieToDestroyLabel . ' ' . $label;
                 } else {
-                    $label = $this->zombieLabel . $label;
+                    $label = $this->zombieLabel . ' ' . $label;
                 }
             }
         }
