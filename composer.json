@@ -2,6 +2,7 @@
     "description": "Find undead (hidden and long untouched) content and help killing it for good",
     "type": "neos-package",
     "name": "sitegeist/zombiehunt",
+    "license": "GPL-3.0-or-later",
     "require": {
         "neos/neos": "^8.3"
     },
