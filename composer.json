@@ -1,5 +1,5 @@
 {
-    "description": "Find ling dead (hidden) content and help killing it for good",
+    "description": "Find undead (hidden and long untouched) content and help killing it for good",
     "type": "neos-package",
     "name": "sitegeist/zombiehunt",
     "require": {
