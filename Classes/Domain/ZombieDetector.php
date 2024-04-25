@@ -27,13 +27,19 @@ class ZombieDetector
             return false;
         }
 
-        $latestAllowedTime = time() - $this->zombificationPeriod;
-        $lastModification = $node->getNodeData()->getLastModificationDateTime()?->getTimestamp();
-        $lastPublication = $node->getNodeData()->getLastPublicationDateTime()?->getTimestamp();
+        $latestAllowedTimestamp = time() - $this->zombificationPeriod;
+
+        /** @var \DateTime|null $lastModificationDateTime */
+        $lastModificationDateTime = $node->getNodeData()->getLastModificationDateTime();
+        $lastModificationTimestamp = $lastModificationDateTime?->getTimestamp();
+
+        /** @var \DateTime|null $lastPublicationDateTime */
+        $lastPublicationDateTime = $node->getNodeData()->getLastPublicationDateTime();
+        $lastPublicationTimestamp = $lastPublicationDateTime?->getTimestamp();
 
         if (
-            ($lastModification === null || $lastModification < $latestAllowedTime)
-            && ($lastPublication === null || $lastPublication < $latestAllowedTime)
+            ($lastModificationTimestamp === null || $lastModificationTimestamp < $latestAllowedTimestamp)
+            && ($lastPublicationTimestamp === null || $lastPublicationTimestamp < $latestAllowedTimestamp)
         ) {
             return true;
         }
@@ -47,14 +53,20 @@ class ZombieDetector
             return false;
         }
 
-        $latestAllowedTime = time() - $this->zombificationPeriod - $this->destructionPeriod;
-        $lastModification = $node->getNodeData()->getLastModificationDateTime()?->getTimestamp();
-        $lastPublication = $node->getNodeData()->getLastPublicationDateTime()?->getTimestamp();
+        $latestAllowedTimestamp = time() - $this->zombificationPeriod - $this->destructionPeriod;
+
+        /** @var \DateTime|null $lastModificationDateTime */
+        $lastModificationDateTime = $node->getNodeData()->getLastModificationDateTime();
+        $lastModificationTimestamp = $lastModificationDateTime?->getTimestamp();
+
+        /** @var \DateTime|null $lastPublicationDateTime */
+        $lastPublicationDateTime = $node->getNodeData()->getLastPublicationDateTime();
+        $lastPublicationTimestamp = $lastPublicationDateTime?->getTimestamp();
 
         if (
             $node->isVisible() === false
-            && ($lastModification === null || $lastModification < $latestAllowedTime)
-            && ($lastPublication === null || $lastPublication < $latestAllowedTime)
+            && ($lastModificationTimestamp === null || $lastModificationTimestamp < $latestAllowedTimestamp)
+            && ($lastPublicationTimestamp === null || $lastPublicationTimestamp < $latestAllowedTimestamp)
         ) {
             return true;
         }

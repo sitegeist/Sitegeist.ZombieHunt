@@ -23,17 +23,17 @@ class ZombieCommandController extends CommandController
     protected string $zombieLabel;
     protected string $zombieToDestroyLabel;
 
-    public function injectZombieDetector(ZombieDetector $zombieDetector)
+    public function injectZombieDetector(ZombieDetector $zombieDetector): void
     {
         $this->zombieDetector = $zombieDetector;
     }
 
-    public function injectRootNodeDetector(RootNodeDetector $rootNodeDetector)
+    public function injectRootNodeDetector(RootNodeDetector $rootNodeDetector): void
     {
         $this->rootNodeDetector = $rootNodeDetector;
     }
 
-    public function injectSiteRepository(SiteRepository $siteRepository)
+    public function injectSiteRepository(SiteRepository $siteRepository): void
     {
         $this->siteRepository = $siteRepository;
     }
@@ -55,12 +55,11 @@ class ZombieCommandController extends CommandController
      */
     public function detectCommand(?string $siteNode = null, ?string $dimensionValues = null): void
     {
-        /**
-         * @var Site[] $sites
-         */
         if ($siteNode === null) {
+            /** @var Site[] $sites */
             $sites = $this->siteRepository->findAll();
         } else {
+            /** @var Site[] $sites */
             $sites = [$this->siteRepository->findOneByNodeName($siteNode)];
         }
 
@@ -119,12 +118,11 @@ class ZombieCommandController extends CommandController
      */
     public function destroyCommand(?string $siteNode = null, ?string $dimensionValues = null, ?bool $dryrun = false): void
     {
-        /**
-         * @var Site[] $sites
-         */
         if ($siteNode === null) {
+            /** @var Site[] $sites */
             $sites = $this->siteRepository->findAll();
         } else {
+            /** @var Site[] $sites */
             $sites = [$this->siteRepository->findOneByNodeName($siteNode)];
         }
 
@@ -205,6 +203,7 @@ class ZombieCommandController extends CommandController
     protected function renderNodePath(NodeInterface $rootNode, NodeInterface $zombieNode): string
     {
         $pathParts = [];
+        /** @var NodeInterface|null $parent */
         $parent = $zombieNode->getParent();
         while ($parent && $parent->getIdentifier() !== $rootNode->getIdentifier()) {
             $pathParts[] = $parent->getLabel();

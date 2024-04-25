@@ -15,6 +15,9 @@ class RootNodeDetector
 {
     use CreateContentContextTrait;
 
+    /**
+     * @param array<string, array<string>> $dimensionValues
+     */
     public function findRootNode(string $siteNodeName, array $dimensionValues = []): NodeInterface
     {
         $context = $this->createContentContext('live', $dimensionValues);
