@@ -24,7 +24,7 @@
     "scripts": {
         "fix": ["phpcbf --standard=PSR12 Classes"],
         "test:lint": ["phpcs --standard=PSR12 -n Classes"],
-        "test:stan": ["phpstan analyse Classes"],
+        "test:stan": ["phpstan analyse --level 8 Classes"],
         "test": ["composer install", "composer  test:lint", "composer  test:stan"]
     },
     "config": {

@@ -7,6 +7,7 @@ namespace Sitegeist\ZombieHunt\Aspect;
 use Neos\ContentRepository\Domain\Model\NodeInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Aop\JoinPointInterface;
+use Neos\Neos\Domain\Service\ContentContext;
 use Sitegeist\ZombieHunt\Domain\ZombieDetector;
 
 #[Flow\Aspect]
@@ -18,7 +19,7 @@ class LabelForNodeAspect
     protected string $zombieLabel;
     protected string $zombieToDestroyLabel;
 
-    public function injectZombieDetector(ZombieDetector $zombieDetector)
+    public function injectZombieDetector(ZombieDetector $zombieDetector): void
     {
         $this->zombieDetector = $zombieDetector;
     }
@@ -38,7 +39,11 @@ class LabelForNodeAspect
         $node = $joinPoint->getProxy();
         $label = $joinPoint->getAdviceChain()->proceed($joinPoint);
 
-        if ($node instanceof NodeInterface && $node->getContext()->isInBackend() && $node->getContext()->getCurrentRenderingMode()->isEdit()) {
+        if (
+            $node instanceof NodeInterface
+            && $node->getContext() instanceof ContentContext
+            && $node->getContext()->isInBackend() && $node->getContext()->getCurrentRenderingMode()->isEdit()
+        ) {
             if ($this->zombieDetector->isZombie($node)) {
                 if ($this->zombieDetector->isZombieThatHasToBeDestroyed($node)) {
                     $label = $this->zombieToDestroyLabel . ' ' . $label;

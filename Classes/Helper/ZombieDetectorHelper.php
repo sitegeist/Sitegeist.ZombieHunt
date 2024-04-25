@@ -12,7 +12,7 @@ class ZombieDetectorHelper implements ProtectedContextAwareInterface
 {
     protected ZombieDetector $zombieDetector;
 
-    public function injectZombieDetector(ZombieDetector $zombieDetector)
+    public function injectZombieDetector(ZombieDetector $zombieDetector): void
     {
         $this->zombieDetector = $zombieDetector;
     }
