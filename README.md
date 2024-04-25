@@ -1,5 +1,5 @@
-# Sitegeist.ZombieHunt 
-## Find and destroy undead contents 🧟
+# Sitegeist.ZombieHunt 🔥🧟🔥
+## Find and destroy undead contents 
 
 Often times editors will only hide obsolete content and never actually delete it. Over time this leads to hidden content
 that is so old no one remembers who wrote it, why and whether it can finally be removed ... we call this ZOMBIE content.
