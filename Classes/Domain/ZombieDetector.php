@@ -29,17 +29,17 @@ class ZombieDetector
 
         $latestAllowedTimestamp = time() - $this->zombificationPeriod;
 
-        /** @var \DateTime|null $lastModificationDateTime */
-        $lastModificationDateTime = $node->getNodeData()->getLastModificationDateTime();
-        $lastModificationTimestamp = $lastModificationDateTime?->getTimestamp();
-
         /** @var \DateTime|null $lastPublicationDateTime */
         $lastPublicationDateTime = $node->getNodeData()->getLastPublicationDateTime();
         $lastPublicationTimestamp = $lastPublicationDateTime?->getTimestamp();
 
+        /** @var \DateTime|null $creationDateTime */
+        $creationDateTime = $node->getNodeData()->getCreationDateTime();
+        $creationTimestamp = $creationDateTime?->getTimestamp();
+
         if (
-            ($lastModificationTimestamp === null || $lastModificationTimestamp < $latestAllowedTimestamp)
-            && ($lastPublicationTimestamp === null || $lastPublicationTimestamp < $latestAllowedTimestamp)
+            ($lastPublicationTimestamp !== null && $lastPublicationTimestamp < $latestAllowedTimestamp)
+            || ($lastPublicationTimestamp === null && $creationTimestamp < $latestAllowedTimestamp)
         ) {
             return true;
         }
@@ -55,18 +55,17 @@ class ZombieDetector
 
         $latestAllowedTimestamp = time() - $this->zombificationPeriod - $this->destructionPeriod;
 
-        /** @var \DateTime|null $lastModificationDateTime */
-        $lastModificationDateTime = $node->getNodeData()->getLastModificationDateTime();
-        $lastModificationTimestamp = $lastModificationDateTime?->getTimestamp();
-
         /** @var \DateTime|null $lastPublicationDateTime */
         $lastPublicationDateTime = $node->getNodeData()->getLastPublicationDateTime();
         $lastPublicationTimestamp = $lastPublicationDateTime?->getTimestamp();
 
+        /** @var \DateTime|null $creationDateTime */
+        $creationDateTime = $node->getNodeData()->getCreationDateTime();
+        $creationTimestamp = $creationDateTime?->getTimestamp();
+
         if (
-            $node->isVisible() === false
-            && ($lastModificationTimestamp === null || $lastModificationTimestamp < $latestAllowedTimestamp)
-            && ($lastPublicationTimestamp === null || $lastPublicationTimestamp < $latestAllowedTimestamp)
+            ($lastPublicationTimestamp !== null && $lastPublicationTimestamp < $latestAllowedTimestamp)
+            || ($lastPublicationTimestamp === null && $creationTimestamp < $latestAllowedTimestamp)
         ) {
             return true;
         }
