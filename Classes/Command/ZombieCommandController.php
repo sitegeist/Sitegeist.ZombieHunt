@@ -76,6 +76,9 @@ class ZombieCommandController extends CommandController
                 $item->getNodeName(),
                 $dimensionValues ? json_decode($dimensionValues, true, JSON_THROW_ON_ERROR) : []
             );
+            if ($rootNode === null) {
+                continue;
+            }
             $zombieCount = 0;
             $zombiesDueToDestructionCount = 0;
 
@@ -143,10 +146,13 @@ class ZombieCommandController extends CommandController
                 $item->getNodeName(),
                 $dimensionValues ? json_decode($dimensionValues, true, JSON_THROW_ON_ERROR) : []
             );
+            if ($rootNode === null) {
+                continue;
+            }
             $zombieCount = 0;
             $removedZombieCount = 0;
 
-            foreach ($this->traverseSubtreeAndYieldZombieNodes($rootNode) as $zombieNode) {
+            foreach ($this->traverseSubtreeAndYieldZombieNodes($rootNode, true) as $zombieNode) {
                 $path = $this->renderNodePath($rootNode, $zombieNode);
                 if ($this->zombieDetector->isZombieThatHasToBeDestroyed($zombieNode)) {
                     $this->outputLine(sprintf('- %s <info>%s (%s)</info> %s', $this->zombieToDestroyLabel, $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
@@ -182,14 +188,17 @@ class ZombieCommandController extends CommandController
     /**
      * @return \Generator<NodeInterface>
      */
-    private function traverseSubtreeAndYieldZombieNodes(NodeInterface $node): \Generator
+    private function traverseSubtreeAndYieldZombieNodes(NodeInterface $node, bool $onlyZombiesToDestroy = false): \Generator
     {
         if ($node->hasChildNodes()) {
             foreach ($node->getChildNodes() as $childNode) {
-                if ($this->zombieDetector->isZombie($childNode)) {
+                $match = $onlyZombiesToDestroy
+                    ? $this->zombieDetector->isZombieThatHasToBeDestroyed($childNode)
+                    : $this->zombieDetector->isZombie($childNode);
+                if ($match) {
                     yield $childNode;
                 } else {
-                    yield from $this->traverseSubtreeAndYieldZombieNodes($childNode);
+                    yield from $this->traverseSubtreeAndYieldZombieNodes($childNode, $onlyZombiesToDestroy);
                 }
             }
         }

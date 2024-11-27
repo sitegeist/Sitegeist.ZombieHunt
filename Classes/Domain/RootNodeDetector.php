@@ -18,13 +18,13 @@ class RootNodeDetector
     /**
      * @param array<string, array<string>> $dimensionValues
      */
-    public function findRootNode(string $siteNodeName, array $dimensionValues = []): NodeInterface
+    public function findRootNode(string $siteNodeName, array $dimensionValues = []): ?NodeInterface
     {
         $context = $this->createContentContext('live', $dimensionValues);
         $rootNode = $context->getNode('/sites/' . $siteNodeName);
 
         if (!$rootNode instanceof NodeInterface) {
-            throw new \DomainException(sprintf('Could not find site node with name %s and dimensionValues %s', $siteNodeName, json_encode($dimensionValues)), 1705939597);
+            return null;
         }
 
         return $rootNode;
