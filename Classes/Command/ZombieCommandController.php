@@ -76,6 +76,9 @@ class ZombieCommandController extends CommandController
                 $item->getNodeName(),
                 $dimensionValues ? json_decode($dimensionValues, true, JSON_THROW_ON_ERROR) : []
             );
+            if ($rootNode === null) {
+                continue;
+            }
             $zombieCount = 0;
             $zombiesDueToDestructionCount = 0;
 
@@ -143,6 +146,9 @@ class ZombieCommandController extends CommandController
                 $item->getNodeName(),
                 $dimensionValues ? json_decode($dimensionValues, true, JSON_THROW_ON_ERROR) : []
             );
+            if ($rootNode === null) {
+                continue;
+            }
             $zombieCount = 0;
             $removedZombieCount = 0;
 
