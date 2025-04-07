@@ -4,22 +4,32 @@ declare(strict_types=1);
 
 namespace Sitegeist\ZombieHunt\Command;
 
+use Neos\ContentRepository\Core\DimensionSpace\DimensionSpacePoint;
+use Neos\ContentRepository\Core\Feature\NodeRemoval\Command\RemoveNodeAggregate;
+use Neos\ContentRepository\Core\Projection\ContentGraph\AbsoluteNodePath;
+use Neos\ContentRepository\Core\Projection\ContentGraph\ContentSubgraphInterface;
+use Neos\ContentRepository\Core\Projection\ContentGraph\Filter\FindChildNodesFilter;
+use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
+use Neos\ContentRepository\Core\Projection\ContentGraph\VisibilityConstraints;
+use Neos\ContentRepository\Core\SharedModel\Node\NodeVariantSelectionStrategy;
+use Neos\ContentRepository\Core\SharedModel\Workspace\WorkspaceName;
 use Neos\ContentRepository\Domain\Model\NodeInterface;
+use Neos\ContentRepositoryRegistry\ContentRepositoryRegistry;
 use Neos\Flow\Cli\CommandController;
-use Neos\Neos\Controller\CreateContentContextTrait;
 use Neos\Neos\Domain\Model\Site;
+use Neos\Neos\Domain\NodeLabel\NodeLabelGeneratorInterface;
 use Neos\Neos\Domain\Repository\SiteRepository;
-use Sitegeist\ZombieHunt\Domain\RootNodeDetector;
 use Sitegeist\ZombieHunt\Domain\ZombieDetector;
 use Sitegeist\ZombieHunt\Traits\DetectZombieNodeTrait;
 
 class ZombieCommandController extends CommandController
 {
-    use CreateContentContextTrait;
-
     protected ZombieDetector $zombieDetector;
-    protected RootNodeDetector $rootNodeDetector;
     protected SiteRepository $siteRepository;
+    protected ContentRepositoryRegistry $contentRepositoryRegistry;
+    protected NodeLabelGeneratorInterface $nodeLabelGenerator;
+
+
     protected string $zombieLabel;
     protected string $zombieToDestroyLabel;
 
@@ -28,14 +38,19 @@ class ZombieCommandController extends CommandController
         $this->zombieDetector = $zombieDetector;
     }
 
-    public function injectRootNodeDetector(RootNodeDetector $rootNodeDetector): void
-    {
-        $this->rootNodeDetector = $rootNodeDetector;
-    }
-
     public function injectSiteRepository(SiteRepository $siteRepository): void
     {
         $this->siteRepository = $siteRepository;
+    }
+
+    public function injectContentRepositoryRegistry(ContentRepositoryRegistry $contentRepositoryRegistry): void
+    {
+        $this->contentRepositoryRegistry = $contentRepositoryRegistry;
+    }
+
+    public function injectNodeLabelGenerator(NodeLabelGeneratorInterface $nodeLabelGenerator): void
+    {
+            $this->nodeLabelGenerator = $nodeLabelGenerator;
     }
 
     /**
@@ -51,7 +66,7 @@ class ZombieCommandController extends CommandController
      * Detect zombies in the given site. Will return an error code if zombie contents that is due to destruction is detected.
      *
      * @param string|null $siteNode node-name of the site to scan, if not defined all sites are used
-     * @param string|null $dimensionValues json of the dimension values to use, otherwise default. Example '{"language":["de"]}'
+     * @param string|null $dimensionValues json of the dimension values to use, otherwise default. Example '{"language":"de"}'
      */
     public function detectCommand(?string $siteNode = null, ?string $dimensionValues = null): void
     {
@@ -72,28 +87,32 @@ class ZombieCommandController extends CommandController
             $this->outputLine(sprintf('Looking for zombie nodes in site <info>%s</info> (%s)', $item->getName(), $item->getNodeName()));
             $this->outputLine();
 
-            $rootNode = $this->rootNodeDetector->findRootNode(
-                $item->getNodeName(),
-                $dimensionValues ? json_decode($dimensionValues, true, JSON_THROW_ON_ERROR) : []
-            );
-            if ($rootNode === null) {
+            $contentRepository = $this->contentRepositoryRegistry->get($item->getConfiguration()->contentRepositoryId);
+            $graph = $contentRepository->getContentGraph(WorkspaceName::forLive());
+            $dimensionSpacePoint = $dimensionValues ? DimensionSpacePoint::fromArray(json_decode($dimensionValues, true, JSON_THROW_ON_ERROR)) : $item->getConfiguration()->defaultDimensionSpacePoint;
+            $subgraph = $graph->getSubgraph($dimensionSpacePoint, VisibilityConstraints::createEmpty());
+
+            $rootNode = $subgraph->findNodeByAbsolutePath(AbsoluteNodePath::fromString('/<Neos.Neos:Sites>/' . $item->getNodeName()->value));
+            if (!$rootNode instanceof Node) {
                 continue;
             }
+
             $zombieCount = 0;
             $zombiesDueToDestructionCount = 0;
 
-            foreach ($this->traverseSubtreeAndYieldZombieNodes($rootNode) as $zombieNode) {
-                $path = $this->renderNodePath($rootNode, $zombieNode);
+            foreach ($this->traverseSubtreeAndYieldZombieNodes($subgraph, $rootNode) as $zombieNode) {
+                $path = $this->renderNodePath($subgraph, $zombieNode);
+
                 if ($this->zombieDetector->isZombieThatHasToBeDestroyed($zombieNode)) {
-                    $this->outputLine(sprintf('- %s <info>%s (%s)</info> %s', $this->zombieToDestroyLabel, $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
+                    $this->outputLine(sprintf('- %s %s<info>%s (%s)</info>', $this->zombieToDestroyLabel, $path, $this->nodeLabelGenerator->getLabel($zombieNode), $zombieNode->nodeTypeName->value));
                     $zombiesDueToDestructionCount++;
                 } else {
-                    $this->outputLine(sprintf('- %s <info>%s (%s)</info> %s', $this->zombieLabel, $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
+                    $this->outputLine(sprintf('- %s %s<info>%s (%s)</info>', $this->zombieLabel, $path, $this->nodeLabelGenerator->getLabel($zombieNode), $zombieNode->nodeTypeName->value));
                 }
                 $zombieCount++;
             }
 
-            $feedbackLines[] = sprintf('<info>%s</info> zombie nodes were detected in site <info>%s</info> (%s) detected. <info>%s</info> are due to destruction', $zombieCount, $item->getName(), $item->getNodeName(), $zombiesDueToDestructionCount);
+            $feedbackLines[] = sprintf('<info>%s</info> zombie nodes were detected in site <info>%s</info> (%s) detected. <info>%s</info> are due to destruction', $zombieCount, $item->getName(), $item->getNodeName()->value, $zombiesDueToDestructionCount);
 
             $zombieCountAcrossAllSites += $zombieCount;
             $zombiesDueToDestructionCountAcrossAllSites += $zombiesDueToDestructionCount;
@@ -142,22 +161,32 @@ class ZombieCommandController extends CommandController
             }
             $this->outputLine();
 
-            $rootNode = $this->rootNodeDetector->findRootNode(
-                $item->getNodeName(),
-                $dimensionValues ? json_decode($dimensionValues, true, JSON_THROW_ON_ERROR) : []
-            );
-            if ($rootNode === null) {
+            $contentRepository = $this->contentRepositoryRegistry->get($item->getConfiguration()->contentRepositoryId);
+            $graph = $contentRepository->getContentGraph(WorkspaceName::forLive());
+            $dimensionSpacePoint = $dimensionValues ? DimensionSpacePoint::fromArray(json_decode($dimensionValues, true, JSON_THROW_ON_ERROR)) : $item->getConfiguration()->defaultDimensionSpacePoint;
+            $subgraph = $graph->getSubgraph($dimensionSpacePoint, VisibilityConstraints::createEmpty());
+
+            $rootNode = $subgraph->findNodeByAbsolutePath(AbsoluteNodePath::fromString('/<Neos.Neos:Sites>/' . $item->getNodeName()->value));
+            if (!$rootNode instanceof Node) {
                 continue;
             }
+
             $zombieCount = 0;
             $removedZombieCount = 0;
 
-            foreach ($this->traverseSubtreeAndYieldZombieNodes($rootNode, true) as $zombieNode) {
-                $path = $this->renderNodePath($rootNode, $zombieNode);
+            foreach ($this->traverseSubtreeAndYieldZombieNodes($subgraph, $rootNode, true) as $zombieNode) {
+                $path = $this->renderNodePath($subgraph, $zombieNode);
                 if ($this->zombieDetector->isZombieThatHasToBeDestroyed($zombieNode)) {
-                    $this->outputLine(sprintf('- %s <info>%s (%s)</info> %s', $this->zombieToDestroyLabel, $zombieNode->getLabel(), $zombieNode->getNodeType()->getLabel(), $path));
+                    $this->outputLine(sprintf('- %s %s <info>%s (%s)</info>', $this->zombieToDestroyLabel, $path, $this->nodeLabelGenerator->getLabel($zombieNode), $zombieNode->nodeTypeName->value));
                     if (!$dryrun) {
-                        $zombieNode->remove();
+                        $contentRepository->handle(
+                            RemoveNodeAggregate::create(
+                                $subgraph->getWorkspaceName(),
+                                $zombieNode->aggregateId,
+                                $dimensionSpacePoint,
+                                NodeVariantSelectionStrategy::STRATEGY_ALL_SPECIALIZATIONS
+                            )
+                        );
                     }
                     $removedZombieCount++;
                 }
@@ -186,38 +215,36 @@ class ZombieCommandController extends CommandController
     }
 
     /**
-     * @return \Generator<NodeInterface>
+     * @return \Generator<Node>
      */
-    private function traverseSubtreeAndYieldZombieNodes(NodeInterface $node, bool $onlyZombiesToDestroy = false): \Generator
+    private function traverseSubtreeAndYieldZombieNodes(ContentSubgraphInterface $subgraph, Node $node, bool $onlyZombiesToDestroy = false): \Generator
     {
-        if ($node->hasChildNodes()) {
-            foreach ($node->getChildNodes() as $childNode) {
-                $match = $onlyZombiesToDestroy
-                    ? $this->zombieDetector->isZombieThatHasToBeDestroyed($childNode)
-                    : $this->zombieDetector->isZombie($childNode);
-                if ($match) {
-                    yield $childNode;
-                } else {
-                    yield from $this->traverseSubtreeAndYieldZombieNodes($childNode, $onlyZombiesToDestroy);
-                }
+        $children = $subgraph->findChildNodes($node->aggregateId, FindChildNodesFilter::create());
+        foreach ($children as $childNode) {
+            $match = $onlyZombiesToDestroy
+                ? $this->zombieDetector->isZombieThatHasToBeDestroyed($childNode)
+                : $this->zombieDetector->isZombie($childNode);
+            if ($match) {
+                yield $childNode;
+            } else {
+                yield from $this->traverseSubtreeAndYieldZombieNodes($subgraph, $childNode, $onlyZombiesToDestroy);
             }
         }
     }
 
     /**
-     * @param NodeInterface $rootNode
-     * @param NodeInterface $zombieNode
+     * @param Node $node
      * @return string
      */
-    protected function renderNodePath(NodeInterface $rootNode, NodeInterface $zombieNode): string
+    protected function renderNodePath(ContentSubgraphInterface $subgraph, Node $node): string
     {
         $pathParts = [];
-        /** @var NodeInterface|null $parent */
-        $parent = $zombieNode->getParent();
-        while ($parent && $parent->getIdentifier() !== $rootNode->getIdentifier()) {
-            $pathParts[] = $parent->getLabel();
-            $parent = $parent->getParent();
+        /** @var Node|null $parent */
+        $parent = $subgraph->findParentNode($node->aggregateId);
+        while ($parent) {
+            $pathParts[] = $this->nodeLabelGenerator->getLabel($parent);
+            $parent = $subgraph->findParentNode($parent->aggregateId);
         }
-        return implode(' -> ', array_reverse($pathParts));
+        return implode('/', array_reverse($pathParts));
     }
 }

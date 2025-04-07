@@ -15,11 +15,8 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                php-versions: ["8.1"]
-                neos-versions: ["8.3"]
-                include:
-                  - php-versions: '8.2'
-                    neos-versions: '8.3'
+                php-versions: ["8.2", "8.3"]
+                neos-versions: ["9.0"]
 
         runs-on: ubuntu-latest
 
@@ -37,7 +34,11 @@ jobs:
                   ini-values: date.timezone="Africa/Tunis", opcache.fast_shutdown=0, apc.enable_cli=on
 
             - name: Set Neos Version
-              run: composer require neos/neos ^${{ matrix.neos-versions }} --no-progress --no-interaction
+              run: |
+                composer require neos/contentgraph-doctrinedbaladapter ^${{ matrix.neos-versions }} --no-progress --no-interaction --no-update
+                composer require neos/eventstore-doctrineadapter --no-progress --no-interaction --no-update
+                composer require neos/neos ^${{ matrix.neos-versions }} --no-progress --no-interaction --no-update
+                composer update
 
             - name: Run Tests
               run: composer test
