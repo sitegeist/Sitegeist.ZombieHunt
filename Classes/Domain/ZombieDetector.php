@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Sitegeist\ZombieHunt\Domain;
 
-use Neos\ContentRepository\Domain\Model\NodeInterface;
+use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
+use Neos\ContentRepositoryRegistry\ContentRepositoryRegistry;
+use Neos\Neos\Domain\SubtreeTagging\NeosSubtreeTag;
 
 class ZombieDetector
 {
     protected int $zombificationPeriod;
     protected int $destructionPeriod;
-
 
     /**
      * @param array{zombificationPeriod: int, destructionPeriod:int} $settings
@@ -21,21 +22,15 @@ class ZombieDetector
         $this->destructionPeriod = $settings['destructionPeriod'];
     }
 
-    public function isZombie(NodeInterface $node): bool
+    public function isZombie(Node $node): bool
     {
-        if ($node->isVisible()) {
+        if ($node->tags->withoutInherited()->contain(NeosSubtreeTag::disabled()) === false) {
             return false;
         }
 
         $latestAllowedTimestamp = time() - $this->zombificationPeriod;
-
-        /** @var \DateTime|null $lastPublicationDateTime */
-        $lastPublicationDateTime = $node->getNodeData()->getLastPublicationDateTime();
-        $lastPublicationTimestamp = $lastPublicationDateTime?->getTimestamp();
-
-        /** @var \DateTime|null $creationDateTime */
-        $creationDateTime = $node->getNodeData()->getCreationDateTime();
-        $creationTimestamp = $creationDateTime?->getTimestamp();
+        $lastPublicationTimestamp = $node->timestamps->lastModified?->getTimestamp();
+        $creationTimestamp = $node->timestamps->created->getTimestamp();
 
         if (
             ($lastPublicationTimestamp !== null && $lastPublicationTimestamp < $latestAllowedTimestamp)
@@ -47,21 +42,15 @@ class ZombieDetector
         return false;
     }
 
-    public function isZombieThatHasToBeDestroyed(NodeInterface $node): bool
+    public function isZombieThatHasToBeDestroyed(Node $node): bool
     {
-        if ($node->isVisible()) {
+        if ($node->tags->withoutInherited()->contain(NeosSubtreeTag::disabled()) === false) {
             return false;
         }
 
         $latestAllowedTimestamp = time() - $this->zombificationPeriod - $this->destructionPeriod;
-
-        /** @var \DateTime|null $lastPublicationDateTime */
-        $lastPublicationDateTime = $node->getNodeData()->getLastPublicationDateTime();
-        $lastPublicationTimestamp = $lastPublicationDateTime?->getTimestamp();
-
-        /** @var \DateTime|null $creationDateTime */
-        $creationDateTime = $node->getNodeData()->getCreationDateTime();
-        $creationTimestamp = $creationDateTime?->getTimestamp();
+        $lastPublicationTimestamp = $node->timestamps->lastModified?->getTimestamp();
+        $creationTimestamp = $node->timestamps->created->getTimestamp();
 
         if (
             ($lastPublicationTimestamp !== null && $lastPublicationTimestamp < $latestAllowedTimestamp)

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Sitegeist\ZombieHunt\Helper;
 
+use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
 use Sitegeist\ZombieHunt\Domain\ZombieDetector;
-use Neos\ContentRepository\Domain\Model\NodeInterface;
 use Neos\Eel\ProtectedContextAwareInterface;
 
 class ZombieDetectorHelper implements ProtectedContextAwareInterface
@@ -17,12 +17,12 @@ class ZombieDetectorHelper implements ProtectedContextAwareInterface
         $this->zombieDetector = $zombieDetector;
     }
 
-    public function isZombie(NodeInterface $node): bool
+    public function isZombie(Node $node): bool
     {
         return $this->zombieDetector->isZombie($node);
     }
 
-    public function isZombieThatHasToBeDestructed(NodeInterface $node): bool
+    public function isZombieThatHasToBeDestructed(Node $node): bool
     {
         return $this->zombieDetector->isZombieThatHasToBeDestroyed($node);
     }

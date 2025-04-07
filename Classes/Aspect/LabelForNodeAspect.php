@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Sitegeist\ZombieHunt\Aspect;
 
-use Neos\ContentRepository\Domain\Model\NodeInterface;
+use Neos\ContentRepository\Core\Projection\ContentGraph\Node;
+use Neos\ContentRepositoryRegistry\ContentRepositoryRegistry;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Aop\JoinPointInterface;
-use Neos\Neos\Domain\Service\ContentContext;
 use Sitegeist\ZombieHunt\Domain\ZombieDetector;
 
 #[Flow\Aspect]
@@ -15,9 +15,15 @@ use Sitegeist\ZombieHunt\Domain\ZombieDetector;
 class LabelForNodeAspect
 {
     protected ZombieDetector $zombieDetector;
+    protected ContentRepositoryRegistry $contentRepositoryRegistry;
 
     protected string $zombieLabel;
     protected string $zombieToDestroyLabel;
+
+    public function injectContentRepositoryRegistry(ContentRepositoryRegistry $contentRepositoryRegistry): void
+    {
+        $this->contentRepositoryRegistry = $contentRepositoryRegistry;
+    }
 
     public function injectZombieDetector(ZombieDetector $zombieDetector): void
     {
@@ -33,16 +39,16 @@ class LabelForNodeAspect
         $this->zombieToDestroyLabel = $settings['zombieToDestroyLabel'];
     }
 
-    #[Flow\Around("method(Neos\ContentRepository\Domain\Model\Node->getLabel())")]
+    #[Flow\Around("method(Neos\Neos\Domain\NodeLabel\ExpressionBasedNodeLabelGenerator->getLabel())")]
     public function markZombieNodes(JoinPointInterface $joinPoint): string
     {
-        $node = $joinPoint->getProxy();
+        /** @var Node $node */
+        $node = $joinPoint->getMethodArgument('node');
         $label = $joinPoint->getAdviceChain()->proceed($joinPoint);
+        $subgraph = $this->contentRepositoryRegistry->subgraphForNode($node);
 
         if (
-            $node instanceof NodeInterface
-            && $node->getContext() instanceof ContentContext
-            && $node->getContext()->isInBackend() && $node->getContext()->getCurrentRenderingMode()->isEdit()
+            $node instanceof Node && !$subgraph->getWorkspaceName()->isLive()
         ) {
             if ($this->zombieDetector->isZombie($node)) {
                 if ($this->zombieDetector->isZombieThatHasToBeDestroyed($node)) {
