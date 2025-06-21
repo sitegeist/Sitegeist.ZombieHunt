@@ -6,6 +6,7 @@ namespace Sitegeist\ZombieHunt\Command;
 
 use Neos\ContentRepository\Core\DimensionSpace\DimensionSpacePoint;
 use Neos\ContentRepository\Core\Feature\NodeRemoval\Command\RemoveNodeAggregate;
+use Neos\ContentRepository\Core\NodeType\NodeTypeName;
 use Neos\ContentRepository\Core\Projection\ContentGraph\AbsoluteNodePath;
 use Neos\ContentRepository\Core\Projection\ContentGraph\ContentSubgraphInterface;
 use Neos\ContentRepository\Core\Projection\ContentGraph\Filter\FindChildNodesFilter;
@@ -65,42 +66,42 @@ class ZombieCommandController extends CommandController
     /**
      * Detect zombies in the given site. Will return an error code if zombie contents that is due to destruction is detected.
      *
-     * @param string|null $siteNode node-name of the site to scan, if not defined all sites are used
+     * @param string|null $site node-name of the site to scan, if not defined all sites are used
      * @param string|null $dimensionValues json of the dimension values to use, otherwise default. Example '{"language":"de"}'
      */
-    public function detectCommand(?string $siteNode = null, ?string $dimensionValues = null): void
+    public function detectCommand(?string $site = null, ?string $dimensionValues = null): void
     {
-        if ($siteNode === null) {
-            /** @var Site[] $sites */
-            $sites = $this->siteRepository->findAll();
+        if ($site === null) {
+            /** @var Site[] $siteEntities */
+            $siteEntities = $this->siteRepository->findAll()->toArray();
         } else {
-            /** @var Site[] $sites */
-            $sites = [$this->siteRepository->findOneByNodeName($siteNode)];
+            /** @var Site[] $siteEntities */
+            $siteEntities = [$this->siteRepository->findOneByNodeName($site)];
         }
 
         $feedbackLines = [];
         $zombieCountAcrossAllSites = 0;
         $zombiesDueToDestructionCountAcrossAllSites = 0;
 
-        foreach ($sites as $item) {
+        foreach ($siteEntities as $siteEntity) {
             $this->outputLine();
-            $this->outputLine(sprintf('Looking for zombie nodes in site <info>%s</info> (%s)', $item->getName(), $item->getNodeName()));
+            $this->outputLine(sprintf('Looking for zombie nodes in site <info>%s</info> (%s)', $siteEntity->getName(), $siteEntity->getNodeName()));
             $this->outputLine();
 
-            $contentRepository = $this->contentRepositoryRegistry->get($item->getConfiguration()->contentRepositoryId);
+            $contentRepository = $this->contentRepositoryRegistry->get($siteEntity->getConfiguration()->contentRepositoryId);
             $graph = $contentRepository->getContentGraph(WorkspaceName::forLive());
-            $dimensionSpacePoint = $dimensionValues ? DimensionSpacePoint::fromArray(json_decode($dimensionValues, true, JSON_THROW_ON_ERROR)) : $item->getConfiguration()->defaultDimensionSpacePoint;
+            $dimensionSpacePoint = $dimensionValues ? DimensionSpacePoint::fromArray(json_decode($dimensionValues, true, JSON_THROW_ON_ERROR)) : $siteEntity->getConfiguration()->defaultDimensionSpacePoint;
             $subgraph = $graph->getSubgraph($dimensionSpacePoint, VisibilityConstraints::createEmpty());
 
-            $rootNode = $subgraph->findNodeByAbsolutePath(AbsoluteNodePath::fromString('/<Neos.Neos:Sites>/' . $item->getNodeName()->value));
-            if (!$rootNode instanceof Node) {
+            $siteNode = $subgraph->findNodeByAbsolutePath(AbsoluteNodePath::fromString('/<Neos.Neos:Sites>/' . $siteEntity->getNodeName()));
+            if (!$siteNode instanceof Node) {
                 continue;
             }
 
             $zombieCount = 0;
             $zombiesDueToDestructionCount = 0;
 
-            foreach ($this->traverseSubtreeAndYieldZombieNodes($subgraph, $rootNode) as $zombieNode) {
+            foreach ($this->traverseSubtreeAndYieldZombieNodes($subgraph, $siteNode) as $zombieNode) {
                 $path = $this->renderNodePath($subgraph, $zombieNode);
 
                 if ($this->zombieDetector->isZombieThatHasToBeDestroyed($zombieNode)) {
@@ -112,7 +113,7 @@ class ZombieCommandController extends CommandController
                 $zombieCount++;
             }
 
-            $feedbackLines[] = sprintf('<info>%s</info> zombie nodes were detected in site <info>%s</info> (%s) detected. <info>%s</info> are due to destruction', $zombieCount, $item->getName(), $item->getNodeName()->value, $zombiesDueToDestructionCount);
+            $feedbackLines[] = sprintf('<info>%s</info> zombie nodes were detected in site <info>%s</info> (%s) detected. <info>%s</info> are due to destruction', $zombieCount, $siteEntity->getName(), $siteEntity->getNodeName()->value, $zombiesDueToDestructionCount);
 
             $zombieCountAcrossAllSites += $zombieCount;
             $zombiesDueToDestructionCountAcrossAllSites += $zombiesDueToDestructionCount;
@@ -122,7 +123,7 @@ class ZombieCommandController extends CommandController
         $this->output(implode(PHP_EOL, $feedbackLines) . PHP_EOL);
         $this->outputLine();
 
-        if (count($sites) > 1) {
+        if (count($siteEntities) > 1) {
             $this->outputLine(sprintf('Across all sites <info>%s</info> zombie nodes were detected of which <info>%s</info> are due to destruction', $zombieCountAcrossAllSites, $zombiesDueToDestructionCountAcrossAllSites));
         }
 
